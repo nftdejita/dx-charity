@@ -9,6 +9,7 @@ const App = () => {
   const [web3, setWeb3] = useState(null);
   const [charityContract, setCharityContract] = useState(null);
   const [logs, setLogs] = useState([]); // 新しいstate変数 logs
+  const [balance, setBalance] = useState(0); // 新しいstate変数 balance
 
   useEffect(() => {
     const initWeb3 = async () => {
@@ -27,7 +28,9 @@ const App = () => {
     };
 
     initWeb3();
-  }, []);
+
+    fetchBalance(); // 募金額を取得
+  }, [web3, charityContract]);
 
   const addLog = (message, isError = false) => {
     setLogs((prevLogs) => [...prevLogs, { text: message, error: isError }]);
@@ -72,9 +75,20 @@ const App = () => {
       });
   };
 
+  const fetchBalance = async () => {
+    if (!web3 || !charityContract) return;
+
+    const balanceWei = await web3.eth.getBalance(
+      charityContract.options.address
+    );
+    const balanceEth = web3.utils.fromWei(balanceWei, "ether");
+    setBalance(balanceEth);
+  };
+
   return (
     <div className="App">
       <h1>Charity App</h1>
+      <h2>Current balance: {balance} ETH</h2> {/* 募金額を表示 */}
       <button onClick={donate}>Donate 0.1 Ether</button>
       <button onClick={withdraw}>Withdraw</button>
       <div className="logs">
